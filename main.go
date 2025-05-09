@@ -58,7 +58,7 @@ func sendMessage(chatID int64, text string) {
 }
 
 func main() {
-	webhookURL := "https://bf4e-240e-3ba-3493-9b10-a2f-28c1-76b-93d3.ngrok-free.app"
+	webhookURL := "https://gorun.lightree.uk"
 	if err := setWebhook(webhookURL); err != nil {
 		log.Fatal("Failed to set webhook:", err)
 	}
