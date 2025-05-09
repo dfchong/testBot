@@ -1,14 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 )
 
-const token = "YOUR_TELEGRAM_BOT_TOKEN"
+const token = "7801289840:AAGHmhUwb-y4VmzELg9MsELrTPtEwVLivmw"
 
 type Update struct {
 	Message struct {
@@ -50,15 +50,15 @@ func sendMessage(chatID int64, text string) {
 		"text":    text,
 	}
 	data, _ := json.Marshal(payload)
-	_, err := http.Post(url, "application/json", 
-	                     http.NoBodyFromReader(data))
+	_, err := http.Post(url, "application/json",
+		bytes.NewBuffer(data))
 	if err != nil {
 		log.Println("Error sending message:", err)
 	}
 }
 
 func main() {
-	webhookURL := "https://yourdomain.com" // same as Caddy domain
+	webhookURL := "https://bf4e-240e-3ba-3493-9b10-a2f-28c1-76b-93d3.ngrok-free.app"
 	if err := setWebhook(webhookURL); err != nil {
 		log.Fatal("Failed to set webhook:", err)
 	}
