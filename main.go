@@ -3,38 +3,58 @@ package main
 import (
 	"log"
 	"os"
+	"time"
+
 	"github.com/joho/godotenv"
 	"gopkg.in/telebot.v4"
 )
 
 func main() {
+
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("load .env file error")
-	}
-
-	webhook := &telebot.Webhook{
-		Listen: "127.0.0.1:8080",
-		MaxConnections: 100,
-		Endpoint: &telebot.WebhookEndpoint{
-			PublicURL: os.Getenv("PUBLICURL"),
-		},
+		log.Fatal("error for loading .env file")
 	}
 
 	pref := telebot.Settings{
 		Token: os.Getenv("TOKEN"),
-		Poller: webhook,
+		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
 	}
 
-	bot, err := telebot.NewBot(pref)
+	b, err := telebot.NewBot(pref)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
-	bot.Handle("/test", func(ctx telebot.Context) error {
-		return ctx.Send("webhook is working via caddy")
+	b.Handle("/hello",func(ctx telebot.Context) error {
+		return ctx.Send("hellox")
 	})
 
-	log.Println("bot running with webhook")
-	bot.Start()
+	b.Handle(telebot.OnText,func(ctx telebot.Context) error {
+		var (
+			user = ctx.Sender()
+			text = ctx.Text()
+		)
+		msg, err := b.Send(user, text)
+		if err != nil {
+			return err
+		}
+
+		return ctx.Send(text)
+	})
+
+	b.Handle(telebot.OnChannelPost, func(ctx telebot.Context) error {
+		msg := ctx.Message()
+	})
+
+	b.Handle(telebot.OnPhoto, func(ctx telebot.Context) error {
+		photo := ctx.Message().Photo
+	})
+
+	b.Handle(telebot.OnQuery,func(ctx telebot.Context) error {
+		return ctx.Answer()
+	})
+
+	b.Start()
 }
