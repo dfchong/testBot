@@ -3,31 +3,38 @@ package main
 import (
 	"log"
 	"os"
-	"time"
-
 	"github.com/joho/godotenv"
-	tele "gopkg.in/telebot.v4"
+	"gopkg.in/telebot.v4"
 )
 
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("failed to load .env")
-	}
-	pref := tele.Settings{
-		Token: os.Getenv("TOKEN"),
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+		log.Fatal("load .env file error")
 	}
 
-	b, err := tele.NewBot(pref)
+	webhook := &telebot.Webhook{
+		Listen: "127.0.0.1:8080",
+		MaxConnections: 100,
+		Endpoint: &telebot.WebhookEndpoint{
+			PublicURL: os.Getenv("PUBLICURL"),
+		},
+	}
+
+	pref := telebot.Settings{
+		Token: os.Getenv("TOKEN"),
+		Poller: webhook,
+	}
+
+	bot, err := telebot.NewBot(pref)
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 
-	b.Handle("/hello",func(ctx tele.Context) error {
-		return ctx.Send("helloadf")
+	bot.Handle("/test", func(ctx telebot.Context) error {
+		return ctx.Send("webhook is working via caddy")
 	})
 
-	b.Start()
+	log.Println("bot running with webhook")
+	bot.Start()
 }
