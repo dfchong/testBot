@@ -23,7 +23,7 @@ func LoadConfig() *Config {
 	cfg := &Config{
 		BotToken: os.Getenv("TOKEN"),
 		WebhookURL: os.Getenv("PUBLICURL"),
-		ListenAddr: getEnv("LSITEN_ADD", ":3000"),
+		ListenAddr: getEnv("LISTEN_ADDR", ":3000"),
 		RedisAddr: os.Getenv("REDIS_ADDR"),
 		RedisPassword: os.Getenv("REDIS_PASSWORD"),
 		SentryDSN: os.Getenv("SENTRY_DSN"),
@@ -39,5 +39,8 @@ func LoadConfig() *Config {
 }
 
 func getEnv(key, fallback string) string {
-	
+	if val := os.Getenv(key); val != ""{
+		return val
+	}
+	return fallback
 }

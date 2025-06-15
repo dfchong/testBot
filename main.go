@@ -2,67 +2,35 @@ package main
 
 import (
 	"log"
-	"os"
+	"testbot/config"
+	"testbot/service"
+	"time"
 
-	"github.com/joho/godotenv"
-	tb "gopkg.in/telebot.v4"
+	"github.com/getsentry/sentry-go"
 )
 
-
-
-
 func main() {
+	cfg := config.LoadConfig()
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("error for loading .env file")
-	}
-
-	webhook := &tb.Webhook{
-		Listen: ":8080", //此处是重点 只写端口，不写地址
-		Endpoint: &tb.WebhookEndpoint{
-			PublicURL: os.Getenv("PUBLICURL"),
-		},
-	}
-
-	pref := tb.Settings{
-		Token:  os.Getenv("TOKEN"),
-		Poller: webhook,
-	}
-
-	bot, err := tb.NewBot(pref)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//========================== 以上固定内容  不要改 ＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-
-	btn1 := tb.InlineButton{
-		Unique: "btn1",
-		Text: "按钮1",
-	}
-
-	btn2 := tb.InlineButton{
-		Unique: "btn2",
-		Text: "按钮2",
-	}
-
-	inlineKeys := [][]tb.InlineButton{
-		{btn1,btn2},
-	}
-
-	bot.Handle(&btn1, func(ctx tb.Context) error {
-		return ctx.Send("u clike btn1")
-	})
-
-	bot.Handle(&btn2, func(ctx tb.Context) error {
-		return ctx.Send("u click btn2")
-	})
-	
-	bot.Handle(tb.OnText, func(ctx tb.Context) error {
-		return ctx.Send("inlinekey message", &tb.ReplyMarkup{
-			InlineKeyboard: inlineKeys,
+	if cfg.SentryDSN != "" {
+		err := sentry.Init(sentry.ClientOptions{
+			Dsn: cfg.SentryDSN,
 		})
-	})
-	bot.Start()
+		if err != nil {
+			log.Fatalf("sentry init faled: %v", err)
+		}
+		defer sentry.Flush(2 * time.Second)
+	}
+
+	botSvc, err := service.NewBotService(cfg)
+	if err != nil {
+		sentry.CaptureException(err)
+		log.Fatalf("start failed: %v", err)
+	}
+
+	log.Println("bot starting ...")
+	if err := botSvc.Start(); err != nil {
+		sentry.CaptureException(err)
+		log.Fatalf("bot panic: %v", err)
+	}
 }
