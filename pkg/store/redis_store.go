@@ -29,7 +29,7 @@ func (s *RedisStore) Set(ctx context.Context, key, value string) error {
 	return s.client.Set(ctx,key, value, 0).Err()
 }
 
-func (s *RedisStore) Get(ctx context.Context, key, value string) (string,error) {
+func (s *RedisStore) Get(ctx context.Context, key string) (string,error) {
 	if s.client == nil {
 		return "" , errors.New("redis client is nil")
 	}
