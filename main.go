@@ -10,8 +10,9 @@ import (
 )
 
 func main() {
-	cfg := config.LoadConfig()
+	cfg := config.LoadConfig() 	// 从 配置文件 获取配置
 
+	//创建sentry客户端
 	if cfg.SentryDSN != "" {
 		err := sentry.Init(sentry.ClientOptions{
 			Dsn: cfg.SentryDSN,
@@ -22,12 +23,14 @@ func main() {
 		defer sentry.Flush(2 * time.Second)
 	}
 
+	//创建 botservice
 	botSvc, err := service.NewBotService(cfg)
 	if err != nil {
 		sentry.CaptureException(err)
 		log.Fatalf("start failed: %v", err)
 	}
 
+	//启动 bot
 	log.Println("bot starting ...")
 	if err := botSvc.Start(); err != nil {
 		sentry.CaptureException(err)

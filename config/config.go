@@ -26,7 +26,7 @@ func LoadConfig() *Config {
 	cfg := &Config{
 		BotToken:      os.Getenv("TOKEN"),
 		WebhookURL:    os.Getenv("PUBLICURL"),
-		ListenAddr:    getEnv("LISTEN_ADDR", ":3000"),
+		ListenAddr:    getEnv("LISTEN_ADDR", ":3000"), //指定监听端口
 		RedisAddr:     os.Getenv("REDIS_ADDR"),
 		RedisPassword: os.Getenv("REDIS_PASSWORD"),
 		SentryDSN:     os.Getenv("SENTRY_DSN"),
@@ -42,6 +42,7 @@ func LoadConfig() *Config {
 }
 
 // 获取webhook publick url, 如果明确给出了addr ,则使用addr , 否则使用“：3000”
+// 获取监听端口 default = 3000
 func getEnv(key, fallback string) string {
 	if val := os.Getenv(key); val != "" {
 		return val
